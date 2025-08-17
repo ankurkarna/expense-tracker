@@ -25,7 +25,7 @@ public class ExpenseController {
     @Autowired
     private UserService userService;
 
-    // Get logged-in user's UUID
+
     private UUID getCurrentUserId() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userService.getUserByUsername(username)
@@ -69,6 +69,18 @@ public class ExpenseController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{expenseId}")
+    public ResponseEntity<?> updateExpense(@PathVariable Integer expenseId, @RequestBody ExpenseDTO expenseDTO){
+        UUID currentUserId = getCurrentUserId();
+        Optional<Expense> entry = expenseService.getEntry(expenseId, currentUserId);
+        if(entry.isPresent()){
+            Expense updatedExpense = expenseService.updateExpense(entry.get(), expenseDTO);
+            return new ResponseEntity<>(updatedExpense, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Expense not found", HttpStatus.NOT_FOUND);
         }
     }
 

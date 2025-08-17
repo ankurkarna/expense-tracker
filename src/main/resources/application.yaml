@@ -1,24 +1,37 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
-    name: Expense-Tracker
+    name: ${APP_NAME:Expense-Tracker}
 
   datasource:
-    url: jdbc:mysql://localhost:3306/expense_tracker?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
-    username: expenseuser
-    password: ExpensePass123!
+    url: jdbc:mysql://${DB_HOST:ankur-db-spring-boot-projects.c.aivencloud.com}:${DB_PORT:10449}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=false&serverTimezone=Asia/Kolkata
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
+      minimum-idle: ${DB_MIN_IDLE:5}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+
+    # This 'properties' key was incorrectly indented.
+    # It should be a child of 'datasource', not a sibling.
+    properties:
+      sslMode: VERIFY_CA
+      sslCa: classpath:ca.pem
 
   jpa:
     hibernate:
-      ddl-auto: update  # create / update / validate / none
+      ddl-auto: ${JPA_DDL_AUTO:update}
+
+    # This 'properties' key was also incorrectly indented.
+    # It should be a child of 'jpa', not a sibling.
+    properties:
+      hibernate.dialect: ${JPA_DIALECT:org.hibernate.dialect.MySQL8Dialect}
 
 logging:
   level:
-    root: ERROR
+    root: ${LOG_LEVEL_ROOT:INFO}
+    me.paulschwarz.dotenv: DEBUG   # confirm .env is loaded

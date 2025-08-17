@@ -53,4 +53,24 @@ public class ExpenseService {
     public void deleteById(Integer id) {
         expenseRepository.deleteById(id);
     }
+
+    public Expense updateExpense(Expense expense, ExpenseDTO expenseDTO) {
+        expense.setLastUpdateTime(LocalDateTime.now());
+        if (expenseDTO.getTitle() != null && !expenseDTO.getTitle().isBlank()) {
+            expense.setTitle(expenseDTO.getTitle());
+        }
+        if (expenseDTO.getAmount() != null) {
+            expense.setAmount(expenseDTO.getAmount());
+        }
+        if (expenseDTO.getCategory() != null && !expenseDTO.getCategory().isBlank()) {
+            expense.setCategory(expenseDTO.getCategory());
+        }
+        if (expenseDTO.getPaymentMethod() != null && !expenseDTO.getPaymentMethod().isBlank()) {
+            expense.setPaymentMethod(expenseDTO.getPaymentMethod());
+        }
+        if (expenseDTO.getNotes() != null && !expenseDTO.getNotes().isBlank()) {
+            expense.setNotes(expenseDTO.getNotes());
+        }
+        return expenseRepository.save(expense);
+    }
 }
