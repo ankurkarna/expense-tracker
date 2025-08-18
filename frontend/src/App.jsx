@@ -1,35 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Header from './components/Header.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import AddExpense from './components/AddExpense.jsx';
 import ExpenseList from './components/ExpenseList.jsx';
 import UserManagement from './components/UserManagement.jsx';
-import { createTestUser } from './services/api.jsx';
+import { getCurrentUser, logout, getAllExpenses } from './services/api.jsx';
 
 function App() {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(getCurrentUser());
     const [expenses, setExpenses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Set loading to true initially
 
     useEffect(() => {
-        // Initialize app by creating a test user if none exists
-        const initializeApp = async () => {
-            try {
-                const user = await createTestUser();
-                setCurrentUser(user);
-            } catch (error) {
-                console.error('Failed to initialize app:', error);
-                // Set a default user if API fails
-                setCurrentUser({ userId: 'test-user-id', userName: 'testuser' });
-            } finally {
-                setLoading(false);
+        const fetchExpenses = async () => {
+            if (currentUser) {
+                try {
+                    setLoading(true);
+                    const fetchedExpenses = await getAllExpenses(currentUser.userId);
+                    setExpenses(fetchedExpenses);
+                } catch (error) {
+                    console.error('Failed to fetch expenses:', error);
+                    // Optionally, show a toast error
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false); // No user, no loading
             }
         };
 
-        initializeApp();
-    }, []);
+        fetchExpenses();
+    }, [currentUser]); // Re-run when currentUser changes
+
+    const handleLogout = () => {
+        logout();
+        setCurrentUser(null);
+        setExpenses([]); // Clear expenses on logout
+    };
 
     if (loading) {
         return (
@@ -41,13 +50,11 @@ function App() {
             }}>
                 <div className="card text-center">
                     <h2>Loading Expense Tracker...</h2>
-                    <p className="text-muted">Please wait while we set up your account</p>
+                    <p className="text-muted">Please wait a moment</p>
                 </div>
             </div>
         );
     }
-
-
 
     return (
         <Router>
@@ -63,46 +70,51 @@ function App() {
                     }}
                 />
 
-                <Header currentUser={currentUser} />
+                <Header currentUser={currentUser} onLogout={handleLogout} />
 
                 <main className="container" style={{ paddingTop: '20px', paddingBottom: '40px' }}>
                     <Routes>
-                        <Route
-                            path="/"
-                            element={
-                                <Dashboard
-                                    currentUser={currentUser}
-                                    expenses={expenses}
-                                    setExpenses={setExpenses}
+                        {currentUser ? (
+                            <>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <Dashboard
+                                            currentUser={currentUser}
+                                            expenses={expenses}
+                                            setExpenses={setExpenses}
+                                        />
+                                    }
                                 />
-                            }
-                        />
-                        <Route
-                            path="/add"
-                            element={
-                                <AddExpense
-                                    currentUser={currentUser}
-                                    setExpenses={setExpenses}
+                                <Route
+                                    path="/add"
+                                    element={
+                                        <AddExpense
+                                            currentUser={currentUser}
+                                            setExpenses={setExpenses}
+                                        />
+                                    }
                                 />
-                            }
-                        />
-                        <Route
-                            path="/expenses"
-                            element={
-                                <ExpenseList
-                                    expenses={expenses}
-                                    setExpenses={setExpenses}
+                                <Route
+                                    path="/expenses"
+                                    element={
+                                        <ExpenseList
+                                            expenses={expenses}
+                                            setExpenses={setExpenses}
+                                        />
+                                    }
                                 />
-                            }
-                        />
-                        <Route
-                            path="/users"
-                            element={
-                                <UserManagement
-                                    currentUser={currentUser}
+                                <Route path="/login" element={<Navigate to="/" />} />
+                            </>
+                        ) : (
+                            <>
+                                <Route 
+                                    path="/login"
+                                    element={<UserManagement onLogin={setCurrentUser} />}
                                 />
-                            }
-                        />
+                                <Route path="*" element={<Navigate to="/login" />} />
+                            </>
+                        )}
                     </Routes>
                 </main>
             </div>

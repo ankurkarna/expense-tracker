@@ -27,6 +27,7 @@ public class User {
     private String username;
     @NonNull
     private String password;
+    private String name;
     private String accessLevel;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

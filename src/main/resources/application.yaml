@@ -6,9 +6,9 @@ spring:
     name: ${APP_NAME:Expense-Tracker}
 
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=false&serverTimezone=UTC
-    username: ${DB_USERNAME:}
-    password: ${DB_PASSWORD:}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=false&serverTimezone=Asia/Kolkata
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     hikari:
@@ -23,7 +23,6 @@ spring:
       sslMode: VERIFY_CA
       sslCa: classpath:ca.pem
 
-
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
@@ -32,6 +31,8 @@ spring:
     # This 'properties' key was also incorrectly indented.
     # It should be a child of 'jpa', not a sibling.
 
+    # This 'properties' key was also incorrectly indented.
+    # It should be a child of 'jpa', not a sibling.
     properties:
       hibernate.dialect: ${JPA_DIALECT:org.hibernate.dialect.MySQL8Dialect}
 

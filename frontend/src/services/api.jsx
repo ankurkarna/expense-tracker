@@ -11,9 +11,13 @@ const api = axios.create({
     },
 });
 
-// Request interceptor for logging
+// Request interceptor to add JWT token to headers
 api.interceptors.request.use(
     (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
         console.log('API Request:', config.method?.toUpperCase(), config.url);
         return config;
     },
@@ -29,11 +33,36 @@ api.interceptors.response.use(
     },
     (error) => {
         console.error('API Error:', error.response?.data || error.message);
-        const errorMessage = error.response?.data || 'Something went wrong';
+        const errorMessage = error.response?.data?.message || error.response?.data || 'Something went wrong';
         toast.error(errorMessage);
         return Promise.reject(error);
     }
 );
+
+// Auth API calls
+export const login = async (credentials) => {
+    const response = await api.post('/auth/login', credentials);
+    if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+    }
+    return response;
+};
+
+export const register = async (userData) => {
+    return await api.post('/register', userData);
+};
+
+export const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+};
+
+export const getCurrentUser = () => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+};
+
 
 // User API calls
 export const createTestUser = async () => {
@@ -61,7 +90,7 @@ export const getUserById = async (userId) => {
 
 // Expense API calls
 export const addExpense = async (expenseData) => {
-    return await api.post('/expense/add', expenseData);
+    return await api.post('/expense', expenseData);
 };
 
 export const addExpenseWithUserId = async (userId, expenseData) => {
@@ -74,6 +103,10 @@ export const getExpenseById = async (expenseId) => {
 
 export const deleteExpense = async (expenseId) => {
     return await api.delete(`/expense/delete/${expenseId}`);
+};
+
+export const getAllExpenses = async () => {
+    return await api.get('/expense');
 };
 
 // Health check

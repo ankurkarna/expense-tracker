@@ -84,7 +84,7 @@ const Dashboard = ({ currentUser, expenses, setExpenses }) => {
                 <div className="d-flex align-center justify-between">
                     <div>
                         <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>
-                            Welcome back, {currentUser?.userName || 'User'}! 👋
+                            Welcome back, {currentUser?.name || 'User'}! 👋
                         </h1>
                         <p className="text-muted">
                             Here's your expense overview for {format(new Date(), 'MMMM yyyy')}

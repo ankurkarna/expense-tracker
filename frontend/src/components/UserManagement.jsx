@@ -1,193 +1,111 @@
 import React, { useState } from 'react';
-import { User, Plus, Edit, Trash2, Shield } from 'lucide-react';
-import { createUser } from '../services/api.jsx';
+import { User, Shield, LogIn } from 'lucide-react';
+import { login, register } from '../services/api.jsx';
 import toast from 'react-hot-toast';
 
-const UserManagement = ({ currentUser }) => {
-    const [showCreateForm, setShowCreateForm] = useState(false);
+const UserManagement = ({ onLogin }) => {
+    const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
-        userName: '',
-        password: ''
+        username: '',
+        password: '',
+        name: ''
     });
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!formData.userName.trim() || !formData.password.trim()) {
+        if (!formData.username.trim() || !formData.password.trim() || (!isLogin && !formData.name.trim())) {
             toast.error('Please fill in all fields');
             return;
         }
 
         setLoading(true);
-
         try {
-            await createUser(formData);
-            toast.success('User created successfully!');
+            if (isLogin) {
+                const { user } = await login(formData);
+                toast.success('Logged in successfully!');
+                onLogin(user);
+            } else {
+                await register(formData);
+                toast.success('Registered successfully! Please log in.');
+                setIsLogin(true); // Switch to login form after registration
+            }
             setFormData({ userName: '', password: '' });
-            setShowCreateForm(false);
         } catch (error) {
-            console.error('Failed to create user:', error);
+            console.error(`Failed to ${isLogin ? 'login' : 'register'}:`, error);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div>
-            {/* Header */}
-            <div className="card mb-4">
-                <div className="d-flex align-center justify-between">
-                    <div>
-                        <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>User Management</h1>
-                        <p className="text-muted">
-                            Manage users and their access to the expense tracker
-                        </p>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+            <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
+                <h1 className="text-center mb-4">{isLogin ? 'Login' : 'Register'}</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label">
+                            <User size={16} style={{ marginRight: '8px' }} />
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            className="form-input"
+                            placeholder="Enter username"
+                            required
+                        />
                     </div>
-                    <button
-                        onClick={() => setShowCreateForm(!showCreateForm)}
-                        className="btn btn-primary"
-                    >
-                        <Plus size={18} />
-                        Add User
-                    </button>
-                </div>
-            </div>
-
-            {/* Create User Form */}
-            {showCreateForm && (
-                <div className="card mb-4">
-                    <h3 style={{ marginBottom: '20px' }}>Create New User</h3>
-                    <form onSubmit={handleSubmit}>
+                    {!isLogin && (
                         <div className="form-group">
                             <label className="form-label">
                                 <User size={16} style={{ marginRight: '8px' }} />
-                                Username *
+                                Your Name
                             </label>
                             <input
                                 type="text"
-                                name="userName"
-                                value={formData.userName}
+                                name="name"
+                                value={formData.name}
                                 onChange={handleChange}
                                 className="form-input"
-                                placeholder="Enter username"
+                                placeholder="Enter your full name"
                                 required
                             />
                         </div>
-
-                        <div className="form-group">
-                            <label className="form-label">
-                                <Shield size={16} style={{ marginRight: '8px' }} />
-                                Password *
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="form-input"
-                                placeholder="Enter password"
-                                required
-                            />
-                        </div>
-
-                        <div className="d-flex gap-2">
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                disabled={loading}
-                            >
-                                {loading ? 'Creating...' : 'Create User'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowCreateForm(false)}
-                                className="btn btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Current User Info */}
-            <div className="card mb-4">
-                <h3 style={{ marginBottom: '20px' }}>Current User</h3>
-                <div className="d-flex align-center gap-3">
-                    <div style={{
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '24px',
-                        fontWeight: '600',
-                    }}>
-                        {currentUser?.userName?.charAt(0).toUpperCase() || 'U'}
+                    )}
+                    <div className="form-group">
+                        <label className="form-label">
+                            <Shield size={16} style={{ marginRight: '8px' }} />
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className="form-input"
+                            placeholder="Enter password"
+                            required
+                        />
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: 0, marginBottom: '4px' }}>
-                            {currentUser?.userName || 'Unknown User'}
-                        </h4>
-                        <p className="text-muted mb-0">
-                            User ID: {currentUser?.userId || 'N/A'}
-                        </p>
-                    </div>
-                    <div style={{
-                        background: '#28a745',
-                        color: 'white',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                    }}>
-                        Active
-                    </div>
-                </div>
-            </div>
-
-            {/* User Management Info */}
-            <div className="card">
-                <h3 style={{ marginBottom: '20px' }}>About User Management</h3>
-                <div style={{ color: '#6c757d' }}>
-                    <p style={{ marginBottom: '16px' }}>
-                        The Expense Tracker currently supports single-user mode with a test user account.
-                        This allows you to:
-                    </p>
-                    <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                        <li>Track all your personal expenses in one place</li>
-                        <li>Organize expenses by categories</li>
-                        <li>View spending patterns and statistics</li>
-                        <li>Search and filter your expense history</li>
-                    </ul>
-
-                    <div style={{
-                        background: '#fff3cd',
-                        border: '1px solid #ffeaa7',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginTop: '20px',
-                    }}>
-                        <h4 style={{ margin: 0, marginBottom: '8px', color: '#856404' }}>
-                            💡 Future Enhancements
-                        </h4>
-                        <p style={{ margin: 0, color: '#856404' }}>
-                            Multi-user support, user roles, and shared expense tracking are planned for future versions.
-                        </p>
-                    </div>
-                </div>
+                    <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                        <LogIn size={16} style={{ marginRight: '8px' }} />
+                        {loading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
+                    </button>
+                </form>
+                <p className="text-center mt-3">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                    <button onClick={() => setIsLogin(!isLogin)} className="btn btn-link">
+                        {isLogin ? 'Register' : 'Login'}
+                    </button>
+                </p>
             </div>
         </div>
     );

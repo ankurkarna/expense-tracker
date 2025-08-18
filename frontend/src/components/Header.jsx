@@ -1,15 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, Plus, List, Users, Home } from 'lucide-react';
+import { Wallet, Plus, List, Users, Home, LogIn, LogOut } from 'lucide-react';
 
-const Header = ({ currentUser }) => {
+const Header = ({ currentUser, onLogout }) => {
     const location = useLocation();
 
     const navItems = [
         { path: '/', label: 'Dashboard', icon: Home },
         { path: '/add', label: 'Add Expense', icon: Plus },
         { path: '/expenses', label: 'All Expenses', icon: List },
-        { path: '/users', label: 'Users', icon: Users },
     ];
 
     return (
@@ -52,73 +51,82 @@ const Header = ({ currentUser }) => {
                     </Link>
 
                     {/* Navigation */}
-                    <nav>
-                        <ul style={{
-                            display: 'flex',
-                            listStyle: 'none',
-                            margin: 0,
-                            padding: 0,
-                            gap: '8px',
-                        }}>
-                            {navItems.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = location.pathname === item.path;
-
-                                return (
-                                    <li key={item.path}>
-                                        <Link
-                                            to={item.path}
-                                            style={{
-                                                textDecoration: 'none',
-                                                color: isActive ? '#667eea' : '#6c757d',
-                                                padding: '12px 16px',
-                                                borderRadius: '8px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                fontWeight: isActive ? '600' : '500',
-                                                background: isActive ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
-                                                transition: 'all 0.2s ease',
-                                            }}
-                                        >
-                                            <Icon size={18} />
-                                            <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
-                                                {item.label}
-                                            </span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </nav>
-
-                    {/* User Info */}
                     {currentUser && (
-                        <div className="d-flex align-center gap-2">
-                            <div style={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                borderRadius: '50%',
-                                width: '32px',
-                                height: '32px',
+                        <nav>
+                            <ul style={{
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '12px',
-                                fontWeight: '600',
+                                listStyle: 'none',
+                                margin: 0,
+                                padding: 0,
+                                gap: '8px',
                             }}>
-                                {currentUser.userName?.charAt(0).toUpperCase() || 'U'}
-                            </div>
-                            <div style={{ display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
-                                <div style={{ fontSize: '14px', fontWeight: '500' }}>
-                                    {currentUser.userName || 'User'}
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                                    {currentUser.userId ? 'Active' : 'Guest'}
-                                </div>
-                            </div>
-                        </div>
+                                {navItems.map((item) => {
+                                    const Icon = item.icon;
+                                    const isActive = location.pathname === item.path;
+
+                                    return (
+                                        <li key={item.path}>
+                                            <Link
+                                                to={item.path}
+                                                style={{
+                                                    textDecoration: 'none',
+                                                    color: isActive ? '#667eea' : '#6c757d',
+                                                    padding: '12px 16px',
+                                                    borderRadius: '8px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    fontWeight: isActive ? '600' : '500',
+                                                    background: isActive ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                <Icon size={18} />
+                                                <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
+                                                    {item.label}
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </nav>
                     )}
+
+                    {/* User Info / Login Button */}
+                    <div>
+                        {currentUser ? (
+                            <div className="d-flex align-center gap-2">
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                }}>
+                                    {currentUser.userName?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                <div style={{ display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
+                                    <div style={{ fontSize: '14px', fontWeight: '500' }}>
+                                        {currentUser.userName || 'User'}
+                                    </div>
+                                </div>
+                                <button onClick={onLogout} className="btn btn-secondary btn-sm">
+                                    <LogOut size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <Link to="/login" className="btn btn-primary">
+                                <LogIn size={16} style={{ marginRight: '8px' }} />
+                                Login
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </div>
         </header>
